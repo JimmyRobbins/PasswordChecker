@@ -136,6 +136,12 @@
     const CORRECT_PASSWORD = "BETWIXT";
     let validWordsList = [];
 
+const CORRECT_PASSWORD = "BETWIXT";
+    let validWordsList = [];
+
+    // Simply change this number whenever you upload more wrong files (wrong1.mp3, wrong2.mp3, etc.)
+    const TOTAL_FAILURE_SOUNDS = 3;
+
     const mainCard = document.getElementById('main-card');
     const inputs = document.querySelectorAll('.code-input');
     const gameScreen = document.getElementById('game-screen');
@@ -158,17 +164,25 @@
     }
     loadDictionary();
 
-    // Stream and trigger your uploaded custom mp3 sample
+    // Dynamically builds the string name based on a random roll
     function playNuhUhSound() {
         try {
-            const audio = new Audio('wrong.mp3');
-            audio.volume = 0.5; // Balances output level (0.0 to 1.0)
+            if (TOTAL_FAILURE_SOUNDS <= 0) return;
+
+            // Generates a random integer from 1 up to TOTAL_FAILURE_SOUNDS
+            const randomNumber = Math.floor(Math.random() * TOTAL_FAILURE_SOUNDS) + 1;
+
+            // Dynamically constructs the file path string (e.g., "soundEffects/failure/wrong2.mp3")
+            const audioPath = `soundEffects/failure/wrong${randomNumber}.mp3`;
+            
+            const audio = new Audio(audioPath);
+            audio.volume = 0.5;
             audio.play();
         } catch (e) {
             console.error("Audio playback blocked or unsupported:", e);
         }
     }
-
+    
     // Trigger the shake animation and sound effect on failure
     function triggerInvalidFeedback() {
         playNuhUhSound();
