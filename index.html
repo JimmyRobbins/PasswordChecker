@@ -158,38 +158,12 @@
     }
     loadDictionary();
 
-    // Synthesize a retro "nuh-uh" buzzer sound locally
+    // Stream and trigger your uploaded custom mp3 sample
     function playNuhUhSound() {
         try {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            if (!AudioContext) return;
-            const ctx = new AudioContext();
-            
-            // First low tone
-            let osc1 = ctx.createOscillator();
-            let gain1 = ctx.createGain();
-            osc1.type = 'sawtooth';
-            osc1.frequency.setValueAtTime(130, ctx.currentTime); // Low C-sharpish
-            gain1.gain.setValueAtTime(0.1, ctx.currentTime);
-            gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
-            osc1.connect(gain1);
-            gain1.connect(ctx.destination);
-            osc1.start();
-            osc1.stop(ctx.currentTime + 0.12);
-
-            // Second identical low tone right after it
-            setTimeout(() => {
-                let osc2 = ctx.createOscillator();
-                let gain2 = ctx.createGain();
-                osc2.type = 'sawtooth';
-                osc2.frequency.setValueAtTime(130, ctx.currentTime);
-                gain2.gain.setValueAtTime(0.1, ctx.currentTime);
-                gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
-                osc2.connect(gain2);
-                gain2.connect(ctx.destination);
-                osc2.start();
-                osc2.stop(ctx.currentTime + 0.15);
-            }, 140);
+            const audio = new Audio('wrong.mp3');
+            audio.volume = 0.5; // Balances output level (0.0 to 1.0)
+            audio.play();
         } catch (e) {
             console.error("Audio playback blocked or unsupported:", e);
         }
@@ -198,11 +172,7 @@
     // Trigger the shake animation and sound effect on failure
     function triggerInvalidFeedback() {
         playNuhUhSound();
-        
-        // Add class to trigger CSS animation
         mainCard.classList.add('shake');
-        
-        // Remove it right after it completes so it can be re-triggered next time
         setTimeout(() => {
             mainCard.classList.remove('shake');
         }, 400);
@@ -244,11 +214,11 @@
                 checkPassword(currentGuess);
             } else {
                 msgDiv.innerText = "有効な英単語ではありません。";
-                triggerInvalidFeedback(); // Fire shake & sound!
+                triggerInvalidFeedback();
             }
         } else {
             msgDiv.innerText = "7文字すべて入力してください。";
-            triggerInvalidFeedback(); // Fire shake & sound!
+            triggerInvalidFeedback();
         }
     }
 
@@ -271,7 +241,7 @@
             retryBtn.classList.remove('hidden');
             gameScreen.classList.add('hidden');
             resultScreen.classList.remove('hidden');
-            triggerInvalidFeedback(); // Fire shake & sound!
+            triggerInvalidFeedback();
         }
     }
 </script>
