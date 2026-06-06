@@ -11,7 +11,7 @@
             align-items: center;
             min-height: 80vh;
             margin: 0;
-            background-color: transparent;
+            background-color: #f5f5f7;
         }
         .game-container {
             text-align: center;
@@ -125,6 +125,7 @@
 
 <script>
     const CORRECT_PASSWORD = "BETWIXT";
+    let validWordsList = [];
 
     const inputs = document.querySelectorAll('.code-input');
     const gameScreen = document.getElementById('game-screen');
@@ -133,6 +134,20 @@
     const submitBtn = document.getElementById('submit-btn');
     const retryBtn = document.getElementById('retry-btn');
     const msgDiv = document.getElementById('msg');
+
+    // Automatically load your 7LetterWords file when the page loads
+    async function loadDictionary() {
+        try {
+            const response = await fetch('7LetterWords');
+            const text = await response.text();
+            // Split the file by line breaks and clean up any whitespace/carriage returns
+            validWordsList = text.split(/\r?\n/).map(word => word.trim().toUpperCase());
+            console.log("Dictionary loaded successfully!");
+        } catch (error) {
+            console.error("Failed to load word list file:", error);
+        }
+    }
+    loadDictionary();
 
     inputs.forEach((input, index) => {
         input.addEventListener('input', () => {
@@ -161,7 +176,18 @@
         inputs.forEach(i => currentGuess += i.value);
         
         if (currentGuess.length === 7) {
-            checkPassword(currentGuess);
+            // First, make sure our wordlist array isn't empty
+            if (validWordsList.length === 0) {
+                msgDiv.innerText = "単語リストを読み込み中です。少し待ってから再送信してください。";
+                return;
+            }
+
+            // Verify if the guess exists in your uploaded dictionary file
+            if (validWordsList.includes(currentGuess)) {
+                checkPassword(currentGuess);
+            } else {
+                msgDiv.innerText = "有効な英単語ではありません。"; // "Not a valid English word."
+            }
         } else {
             msgDiv.innerText = "7文字すべて入力してください。";
         }
@@ -177,11 +203,9 @@
 
     function checkPassword(guess) {
         if (guess === CORRECT_PASSWORD) {
-            // Correct Screen - Maintained in English
             screenContent.innerHTML = "<h1 style='color: #0f9d58;'>🎉 You Win!</h1><p>Success! You entered the correct password.</p>";
             retryBtn.classList.add('hidden');
         } else {
-            // Incorrect Screen - Translated into Japanese
             screenContent.innerHTML = "<h1 style='color: #d93025;'>❌ 不正解</h1><p>パスワードが正しくありません。</p>";
             retryBtn.classList.remove('hidden');
         }
