@@ -155,6 +155,9 @@ async function checkPassword(guess) {
         resultScreen.classList.remove('hidden');
         
     } catch (e) {
+        // TEMPORARY DEBUGGING LINE: Prints the exact crash reason to your F12 Console!
+        console.error("Decryption crashed! Here is the exact error:", e);
+        
         // The password was wrong, so decryption failed!
         screenContent.innerHTML = "<h1 style='color: #d93025;'>❌ 不正解</h1><p>パスワードが正しくありません。</p>";
         retryBtn.classList.remove('hidden');
