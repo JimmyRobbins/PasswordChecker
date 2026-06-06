@@ -48,6 +48,8 @@ const msgDiv = document.getElementById('msg');
     
     // Trigger the shake animation and sound effect on failure
     // Trigger the shake animation, sound effect, and clear inputs on failure
+
+// Trigger the shake animation, sound effect, and clear inputs on failure
 function triggerInvalidFeedback() {
     playNuhUhSound();
     
@@ -57,11 +59,14 @@ function triggerInvalidFeedback() {
         mainCard.classList.remove('shake');
     }, 400);
 
-    // Clear all input boxes
-    inputs.forEach(input => input.value = "");
-    
-    // Jump the cursor back to the very first box
-    inputs[0].focus();
+    // Wait 600 milliseconds before wiping the text and resetting the cursor
+    setTimeout(() => {
+        // Clear all input boxes
+        inputs.forEach(input => input.value = "");
+        
+        // Jump the cursor back to the very first box
+        inputs[0].focus();
+    }, 600); 
 }
 
     inputs.forEach((input, index) => {
