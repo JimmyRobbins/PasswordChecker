@@ -1,5 +1,6 @@
 
-const CORRECT_PASSWORD = "BETWIXT";
+// The SHA-256 hash of "BETWIXT"
+const OBSCURED_PASSWORD = "dbac62ab64b1f6f8fb9d41d13b42008da62eb1ea751d36bb9114e91fc8230b05";
 let validWordsList = [];
 
 // Simply change this number whenever you upload more wrong files (wrong1.mp3, wrong2.mp3, etc.)
@@ -59,14 +60,14 @@ function triggerInvalidFeedback() {
         mainCard.classList.remove('shake');
     }, 400);
 
-    // Wait 600 milliseconds before wiping the text and resetting the cursor
+    // Wait 1000 milliseconds before wiping the text and resetting the cursor
     setTimeout(() => {
         // Clear all input boxes
         inputs.forEach(input => input.value = "");
         
         // Jump the cursor back to the very first box
         inputs[0].focus();
-    }, 600); 
+    }, 1000); 
 }
 
     inputs.forEach((input, index) => {
@@ -121,18 +122,30 @@ function triggerInvalidFeedback() {
         inputs[0].focus();
     }
 
-    function checkPassword(guess) {
-        if (guess === CORRECT_PASSWORD) {
-            screenContent.innerHTML = "<h1 style='color: #0f9d58;'>🎉 You Win!</h1><p>Success! You entered the correct password.</p>";
-            retryBtn.classList.add('hidden');
-            gameScreen.classList.add('hidden');
-            resultScreen.classList.remove('hidden');
-        } else {
-            screenContent.innerHTML = "<h1 style='color: #d93025;'>❌ 不正解</h1><p>パスワードが正しくありません。</p>";
-            retryBtn.classList.remove('hidden');
-            gameScreen.classList.add('hidden');
-            resultScreen.classList.remove('hidden');
-            triggerInvalidFeedback();
-        }
+async function checkPassword(guess) {
+    // Wait for the browser to calculate the SHA-256 hash of the user's guess
+    const hashedGuess = await hashPassword(guess);
+    
+    // Compare the newly generated hash against your stored winning hash
+    if (hashedGuess === OBSCURED_PASSWORD) {
+        screenContent.innerHTML = "<h1 style='color: #0f9d58;'>🎉 You Win!</h1><p>Success! You entered the correct password.</p>";
+        retryBtn.classList.add('hidden');
+        gameScreen.classList.add('hidden');
+        resultScreen.classList.remove('hidden');
+    } else {
+        screenContent.innerHTML = "<h1 style='color: #d93025;'>❌ 不正解</h1><p>パスワードが正しくありません。</p>";
+        retryBtn.classList.remove('hidden');
+        gameScreen.classList.add('hidden');
+        resultScreen.classList.remove('hidden');
+        triggerInvalidFeedback();
     }
+}
 
+// Converts a string into a secure SHA-256 hash
+async function hashPassword(guess) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(guess);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
