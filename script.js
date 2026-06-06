@@ -1,6 +1,6 @@
+const IV_B64 = 'ghQj+cBSE1AyZ8xL';
+const PAYLOAD_B64 = '8J/kI0Hg7FA4luezGBXSF9Zik7hEHAUi+WRhlfKuDo4ca6JRhmPbhEN89/Nk30thDecdVDTvoVLcRSWK6d9W0z4OB4hZsIOUWDHDtA/Mre0JsMlC1k0dg2EVehzWIVZLMa8/AfImMuLbi0U+7D4R';
 
-// The SHA-256 hash of "BETWIXT"
-const OBSCURED_PASSWORD = "dbac62ab64b1f6f8fb9d41d13b42008da62eb1ea751d36bb9114e91fc8230b05";
 let validWordsList = [];
 
 // Simply change this number whenever you upload more wrong files (wrong1.mp3, wrong2.mp3, etc.)
@@ -122,30 +122,44 @@ function triggerInvalidFeedback() {
         inputs[0].focus();
     }
 
+// Helper to convert Base64 strings back into raw byte arrays
+function b64ToBuf(b64) {
+    return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+}
+
 async function checkPassword(guess) {
-    // Wait for the browser to calculate the SHA-256 hash of the user's guess
-    const hashedGuess = await hashPassword(guess);
-    
-    // Compare the newly generated hash against your stored winning hash
-    if (hashedGuess === OBSCURED_PASSWORD) {
-        screenContent.innerHTML = "<h1 style='color: #0f9d58;'>🎉 You Win!</h1><p>Success! You entered the correct password.</p>";
+    try {
+        const encoder = new TextEncoder();
+        
+        // 1. Hash the user's guess to create the raw 32-byte key
+        const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(guess));
+        
+        // 2. Import that hash as an AES-GCM unlocking key
+        const cryptoKey = await crypto.subtle.importKey(
+            'raw', hashBuffer, { name: 'AES-GCM' }, false, ['decrypt']
+        );
+        
+        // 3. Attempt to decrypt! If the guess is wrong, this will violently fail and throw an error.
+        const decryptedBuffer = await crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv: b64ToBuf(IV_B64) },
+            cryptoKey,
+            b64ToBuf(PAYLOAD_B64)
+        );
+        
+        // 4. If we made it to this line, the password was right! Decode the bytes back to HTML.
+        const winHTML = new TextDecoder().decode(decryptedBuffer);
+        
+        screenContent.innerHTML = winHTML;
         retryBtn.classList.add('hidden');
         gameScreen.classList.add('hidden');
         resultScreen.classList.remove('hidden');
-    } else {
+        
+    } catch (e) {
+        // The password was wrong, so decryption failed!
         screenContent.innerHTML = "<h1 style='color: #d93025;'>❌ 不正解</h1><p>パスワードが正しくありません。</p>";
         retryBtn.classList.remove('hidden');
         gameScreen.classList.add('hidden');
         resultScreen.classList.remove('hidden');
         triggerInvalidFeedback();
     }
-}
-
-// Converts a string into a secure SHA-256 hash
-async function hashPassword(guess) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(guess);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
