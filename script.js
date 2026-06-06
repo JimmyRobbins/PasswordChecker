@@ -47,13 +47,22 @@ const msgDiv = document.getElementById('msg');
     }
     
     // Trigger the shake animation and sound effect on failure
-    function triggerInvalidFeedback() {
-        playNuhUhSound();
-        mainCard.classList.add('shake');
-        setTimeout(() => {
-            mainCard.classList.remove('shake');
-        }, 400);
-    }
+    // Trigger the shake animation, sound effect, and clear inputs on failure
+function triggerInvalidFeedback() {
+    playNuhUhSound();
+    
+    // Trigger the shake animation
+    mainCard.classList.add('shake');
+    setTimeout(() => {
+        mainCard.classList.remove('shake');
+    }, 400);
+
+    // Clear all input boxes
+    inputs.forEach(input => input.value = "");
+    
+    // Jump the cursor back to the very first box
+    inputs[0].focus();
+}
 
     inputs.forEach((input, index) => {
         input.addEventListener('input', () => {
