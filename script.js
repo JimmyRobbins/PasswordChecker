@@ -46,9 +46,17 @@ const msgDiv = document.getElementById('msg');
             console.error("Audio playback blocked or unsupported:", e);
         }
     }
-    
-    // Trigger the shake animation and sound effect on failure
-    // Trigger the shake animation, sound effect, and clear inputs on failure
+
+// Plays the winning sound effect
+function playSuccessSound() {
+    try {
+        const audio = new Audio("soundEffects/success.mp3");
+        audio.volume = 0.5;
+        audio.play();
+    } catch (e) {
+        console.error("Audio playback blocked or unsupported:", e);
+    }
+}
 
 // Trigger the shake animation, sound effect, and clear inputs on failure
 function triggerInvalidFeedback() {
@@ -149,6 +157,9 @@ async function checkPassword(guess) {
         // 4. If we made it to this line, the password was right! Decode the bytes back to HTML.
         const winHTML = new TextDecoder().decode(decryptedBuffer);
         
+        // Play the success sound!
+        playSuccessSound();
+
         screenContent.innerHTML = winHTML;
         retryBtn.classList.add('hidden');
         gameScreen.classList.add('hidden');
