@@ -57,7 +57,23 @@ function playSuccessSound() {
         console.error("Audio playback blocked or unsupported:", e);
     }
 }
+// Generates a random, vibrant HSL color
+function getRandomColor() {
+    const randomHue = Math.floor(Math.random() * 360);
+    return `hsl(${randomHue}, 80%, 65%)`; // 80% saturation, 65% lightness for a soft, bright look
+}
 
+// Applies 4 new random colors to the animated background
+function randomizeBackground() {
+    const color1 = getRandomColor();
+    const color2 = getRandomColor();
+    const color3 = getRandomColor();
+    const color4 = getRandomColor();
+    
+    // Inject the new gradient directly into the body's CSS
+    document.body.style.background = `linear-gradient(-45deg, ${color1}, ${color2}, ${color3}, ${color4})`;
+    document.body.style.backgroundSize = "400% 400%";
+}
 // Trigger the shake animation, sound effect, and clear inputs on failure
 function triggerInvalidFeedback() {
     playNuhUhSound();
@@ -165,8 +181,7 @@ async function checkPassword(guess) {
         gameScreen.classList.add('hidden');
         resultScreen.classList.remove('hidden');
         
-    } catch (e) {
-        // TEMPORARY DEBUGGING LINE: Prints the exact crash reason to your F12 Console!
+} catch (e) {
         console.error("Decryption crashed! Here is the exact error:", e);
         
         // The password was wrong, so decryption failed!
@@ -174,6 +189,12 @@ async function checkPassword(guess) {
         retryBtn.classList.remove('hidden');
         gameScreen.classList.add('hidden');
         resultScreen.classList.remove('hidden');
+        
+        // Randomize the colors to scramble the screen!
+        randomizeBackground();
+        
         triggerInvalidFeedback();
     }
 }
+// Randomize the background immediately when the script loads
+randomizeBackground();
