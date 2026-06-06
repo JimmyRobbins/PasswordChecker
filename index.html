@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            margin: 0;
+            background-color: transparent;
+        }
+        .game-container {
+            text-align: center;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 450px;
+            width: 100%;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .code-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+        .code-input {
+            width: 45px;
+            height: 55px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            text-transform: uppercase;
+            transition: border-color 0.2s;
+        }
+        .code-input:focus {
+            border-color: #4285f4;
+            outline: none;
+        }
+        .submit-btn, .retry-btn {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            width: 100%;
+        }
+        .submit-btn:hover {
+            background-color: #357ae8;
+        }
+        .submit-btn:active, .retry-btn:active {
+            transform: scale(0.98);
+        }
+        .retry-btn {
+            background-color: #5f6368;
+            margin-top: 20px;
+        }
+        .retry-btn:hover {
+            background-color: #4a4e51;
+        }
+        .error-message {
+            color: #d93025;
+            font-size: 14px;
+            margin-top: 15px;
+            min-height: 20px;
+            font-weight: bold;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .win-screen {
+            animation: fadeIn 0.5s ease-in-out;
+            padding: 10px;
+        }
+        .win-screen h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        .win-screen p {
+            color: #666;
+            font-size: 18px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div id="game-screen">
+        <h2>七桁のパスワードを入力</h2>
+        <div class="code-container">
+            <input type="text" class="code-input" maxlength="1" autofocus>
+            <input type="text" class="code-input" maxlength="1">
+            <input type="text" class="code-input" maxlength="1">
+            <input type="text" class="code-input" maxlength="1">
+            <input type="text" class="code-input" maxlength="1">
+            <input type="text" class="code-input" maxlength="1">
+            <input type="text" class="code-input" maxlength="1">
+        </div>
+        <button id="submit-btn" class="submit-btn">送信</button>
+        <div id="msg" class="error-message"></div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <div id="screen-content" class="win-screen"></div>
+        <button id="retry-btn" class="retry-btn">もう一度試す</button>
+    </div>
+</div>
+
+<script>
+    const CORRECT_PASSWORD = "BETWIXT";
+
+    const inputs = document.querySelectorAll('.code-input');
+    const gameScreen = document.getElementById('game-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const screenContent = document.getElementById('screen-content');
+    const submitBtn = document.getElementById('submit-btn');
+    const retryBtn = document.getElementById('retry-btn');
+    const msgDiv = document.getElementById('msg');
+
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', () => {
+            input.value = input.value.toUpperCase();
+            if (input.value.length === 1 && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+            msgDiv.innerText = "";
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === "Backspace" && input.value.length === 0 && index > 0) {
+                inputs[index - 1].focus();
+            }
+            if (e.key === "Enter") {
+                handleSubmit();
+            }
+        });
+    });
+
+    submitBtn.addEventListener('click', handleSubmit);
+    retryBtn.addEventListener('click', handleRetry);
+
+    function handleSubmit() {
+        let currentGuess = "";
+        inputs.forEach(i => currentGuess += i.value);
+        
+        if (currentGuess.length === 7) {
+            checkPassword(currentGuess);
+        } else {
+            msgDiv.innerText = "7文字すべて入力してください。";
+        }
+    }
+
+    function handleRetry() {
+        inputs.forEach(input => input.value = "");
+        msgDiv.innerText = "";
+        resultScreen.classList.add('hidden');
+        gameScreen.classList.remove('hidden');
+        inputs[0].focus();
+    }
+
+    function checkPassword(guess) {
+        if (guess === CORRECT_PASSWORD) {
+            // Correct Screen - Maintained in English
+            screenContent.innerHTML = "<h1 style='color: #0f9d58;'>🎉 You Win!</h1><p>Success! You entered the correct password.</p>";
+            retryBtn.classList.add('hidden');
+        } else {
+            // Incorrect Screen - Translated into Japanese
+            screenContent.innerHTML = "<h1 style='color: #d93025;'>❌ 不正解</h1><p>パスワードが正しくありません。</p>";
+            retryBtn.classList.remove('hidden');
+        }
+
+        gameScreen.classList.add('hidden');
+        resultScreen.classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>
