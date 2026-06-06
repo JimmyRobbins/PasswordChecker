@@ -1,21 +1,18 @@
 
-    const CORRECT_PASSWORD = "BETWIXT";
-    let validWordsList = [];
-
 const CORRECT_PASSWORD = "BETWIXT";
-    let validWordsList = [];
+let validWordsList = [];
 
-    // Simply change this number whenever you upload more wrong files (wrong1.mp3, wrong2.mp3, etc.)
-    const TOTAL_FAILURE_SOUNDS = 13;
+// Simply change this number whenever you upload more wrong files (wrong1.mp3, wrong2.mp3, etc.)
+const TOTAL_FAILURE_SOUNDS = 13;
 
-    const mainCard = document.getElementById('main-card');
-    const inputs = document.querySelectorAll('.code-input');
-    const gameScreen = document.getElementById('game-screen');
-    const resultScreen = document.getElementById('result-screen');
-    const screenContent = document.getElementById('screen-content');
-    const submitBtn = document.getElementById('submit-btn');
-    const retryBtn = document.getElementById('retry-btn');
-    const msgDiv = document.getElementById('msg');
+const mainCard = document.getElementById('main-card');
+const inputs = document.querySelectorAll('.code-input');
+const gameScreen = document.getElementById('game-screen');
+const resultScreen = document.getElementById('result-screen');
+const screenContent = document.getElementById('screen-content');
+const submitBtn = document.getElementById('submit-btn');
+const retryBtn = document.getElementById('retry-btn');
+const msgDiv = document.getElementById('msg');
 
     // Load dictionary file
     async function loadDictionary() {
