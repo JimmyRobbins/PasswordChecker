@@ -22,6 +22,15 @@
             max-width: 450px;
             width: 100%;
         }
+        /* Shake Animation Class */
+        .shake {
+            animation: shakeAnim 0.4s ease-in-out;
+        }
+        @keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            15%, 45%, 75% { transform: translateX(-10px); }
+            30%, 60%, 90% { transform: translateX(10px); }
+        }
         h2 {
             color: #333;
             margin-bottom: 20px;
@@ -101,7 +110,7 @@
 </head>
 <body>
 
-<div class="game-container">
+<div id="main-card" class="game-container">
     <div id="game-screen">
         <h2>七桁のパスワードを入力</h2>
         <div class="code-container">
@@ -127,6 +136,7 @@
     const CORRECT_PASSWORD = "BETWIXT";
     let validWordsList = [];
 
+    const mainCard = document.getElementById('main-card');
     const inputs = document.querySelectorAll('.code-input');
     const gameScreen = document.getElementById('game-screen');
     const resultScreen = document.getElementById('result-screen');
@@ -135,12 +145,11 @@
     const retryBtn = document.getElementById('retry-btn');
     const msgDiv = document.getElementById('msg');
 
-    // Automatically load your 7LetterWords file when the page loads
+    // Load dictionary file
     async function loadDictionary() {
         try {
             const response = await fetch('7LetterWords');
             const text = await response.text();
-            // Split the file by line breaks and clean up any whitespace/carriage returns
             validWordsList = text.split(/\r?\n/).map(word => word.trim().toUpperCase());
             console.log("Dictionary loaded successfully!");
         } catch (error) {
@@ -148,6 +157,56 @@
         }
     }
     loadDictionary();
+
+    // Synthesize a retro "nuh-uh" buzzer sound locally
+    function playNuhUhSound() {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            
+            // First low tone
+            let osc1 = ctx.createOscillator();
+            let gain1 = ctx.createGain();
+            osc1.type = 'sawtooth';
+            osc1.frequency.setValueAtTime(130, ctx.currentTime); // Low C-sharpish
+            gain1.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+            osc1.connect(gain1);
+            gain1.connect(ctx.destination);
+            osc1.start();
+            osc1.stop(ctx.currentTime + 0.12);
+
+            // Second identical low tone right after it
+            setTimeout(() => {
+                let osc2 = ctx.createOscillator();
+                let gain2 = ctx.createGain();
+                osc2.type = 'sawtooth';
+                osc2.frequency.setValueAtTime(130, ctx.currentTime);
+                gain2.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start();
+                osc2.stop(ctx.currentTime + 0.15);
+            }, 140);
+        } catch (e) {
+            console.error("Audio playback blocked or unsupported:", e);
+        }
+    }
+
+    // Trigger the shake animation and sound effect on failure
+    function triggerInvalidFeedback() {
+        playNuhUhSound();
+        
+        // Add class to trigger CSS animation
+        mainCard.classList.add('shake');
+        
+        // Remove it right after it completes so it can be re-triggered next time
+        setTimeout(() => {
+            mainCard.classList.remove('shake');
+        }, 400);
+    }
 
     inputs.forEach((input, index) => {
         input.addEventListener('input', () => {
@@ -176,20 +235,20 @@
         inputs.forEach(i => currentGuess += i.value);
         
         if (currentGuess.length === 7) {
-            // First, make sure our wordlist array isn't empty
             if (validWordsList.length === 0) {
-                msgDiv.innerText = "単語リストを読み込み中です。少し待ってから再送信してください。";
+                msgDiv.innerText = "単語リストを読み込み中です。";
                 return;
             }
 
-            // Verify if the guess exists in your uploaded dictionary file
             if (validWordsList.includes(currentGuess)) {
                 checkPassword(currentGuess);
             } else {
-                msgDiv.innerText = "有効な英単語ではありません。"; // "Not a valid English word."
+                msgDiv.innerText = "有効な英単語ではありません。";
+                triggerInvalidFeedback(); // Fire shake & sound!
             }
         } else {
             msgDiv.innerText = "7文字すべて入力してください。";
+            triggerInvalidFeedback(); // Fire shake & sound!
         }
     }
 
@@ -205,13 +264,15 @@
         if (guess === CORRECT_PASSWORD) {
             screenContent.innerHTML = "<h1 style='color: #0f9d58;'>🎉 You Win!</h1><p>Success! You entered the correct password.</p>";
             retryBtn.classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
         } else {
             screenContent.innerHTML = "<h1 style='color: #d93025;'>❌ 不正解</h1><p>パスワードが正しくありません。</p>";
             retryBtn.classList.remove('hidden');
+            gameScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            triggerInvalidFeedback(); // Fire shake & sound!
         }
-
-        gameScreen.classList.add('hidden');
-        resultScreen.classList.remove('hidden');
     }
 </script>
 
